@@ -1,0 +1,19 @@
+# Which courses to watch (as they appear on the schedule page).
+courses:
+  - "STAT 243Z"
+
+# Public UO class schedule search results (Winter 2027, all STAT courses).
+# No login needed. NOTE: this old search retires Dec 16, 2026 -- the monitor
+# will push you a "failing" alert when that happens, and this URL gets swapped.
+schedule_url: "https://duckweb.uoregon.edu/duckweb/hwskdhnt.P_ListCrse?term_in=202602&sel_subj=dummy&sel_day=dummy&sel_schd=dummy&sel_insm=dummy&sel_camp=dummy&sel_levl=dummy&sel_sess=dummy&sel_instr=dummy&sel_ptrm=dummy&sel_attr=dummy&sel_cred=dummy&sel_tuition=dummy&sel_open=dummy&sel_weekend=dummy&sel_title=&sel_to_cred=&sel_from_cred=&sel_subj=STAT&sel_crse=&sel_crn=&sel_camp=%25&sel_levl=%25&sel_attr=%25&begin_hh=0&begin_mi=0&begin_ap=a&end_hh=0&end_mi=0&end_ap=a&submit_btn=Show+Classes"
+
+# Where tapping the notification takes you.
+click_url: "https://my.uoregon.edu"
+
+# Leave blank -- your ntfy topic goes in as a GitHub secret named NTFY_TOPIC.
+ntfy_topic: ""
+
+# Push a warning if the check fails this many times in a row
+# (page changed, DuckWeb maintenance, etc.). Only sent once until it recovers.
+notify_on_errors: true
+error_threshold: 3

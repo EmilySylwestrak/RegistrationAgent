@@ -1,0 +1,56 @@
+name: Check class seats
+
+on:
+  schedule:
+    # Every 10 minutes. GitHub's free tier treats this as best-effort and
+    # often runs it less often than that.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:  # "Run workflow" button on the Actions tab
+
+concurrency:
+  group: class-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write  # to commit state.json back
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python monitor.py
+
+      - name: Persist state
+        # Remember what's already been alerted. Retries with pull --rebase in
+        # case you edited the repo while the check was running.
+        run: |
+          git config user.name "class-monitor-bot"
+          git config user.email "class-monitor-bot@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then
+            echo "No state change."
+            exit 0
+          fi
+          git commit -m "Update state [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then exit 0; fi
+            echo "Push failed (attempt $i), rebasing and retrying..."
+            git pull --rebase
+            sleep $((i * 3))
+          done
+          echo "Could not push state after 5 attempts."
+          exit 1
