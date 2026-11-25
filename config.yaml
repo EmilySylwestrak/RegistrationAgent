@@ -13,6 +13,11 @@ click_url: "https://my.uoregon.edu"
 # Leave blank -- your ntfy topic goes in as a GitHub secret named NTFY_TOPIC.
 ntfy_topic: ""
 
+# Each GitHub run stays alive and re-checks on this interval
+# (one page load per check -- keep it polite, 3 min or more).
+check_every_minutes: 3
+run_for_minutes: 340   # ~5h40m; GitHub's limit per run is 6h
+
 # Push a warning if the check fails this many times in a row
 # (page changed, DuckWeb maintenance, etc.). Only sent once until it recovers.
 notify_on_errors: true

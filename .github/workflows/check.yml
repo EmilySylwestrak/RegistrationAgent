@@ -2,9 +2,11 @@ name: Check class seats
 
 on:
   schedule:
-    # Every 10 minutes. GitHub's free tier treats this as best-effort and
-    # often runs it less often than that.
-    - cron: "*/10 * * * *"
+    # Each run loops for ~5h40m checking every 3 min (see config.yaml).
+    # This hourly trigger just makes sure the next run is queued when one
+    # ends, even if GitHub starts it late. Queued extras get "cancelled" --
+    # that's expected and harmless.
+    - cron: "17 * * * *"
   workflow_dispatch:  # "Run workflow" button on the Actions tab
 
 concurrency:
@@ -14,7 +16,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 355
     permissions:
       contents: write  # to commit state.json back
 
@@ -32,9 +34,10 @@ jobs:
       - name: Run monitor
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-        run: python monitor.py
+        run: python -u monitor.py --loop
 
       - name: Persist state
+        if: always()
         # Remember what's already been alerted. Retries with pull --rebase in
         # case you edited the repo while the check was running.
         run: |

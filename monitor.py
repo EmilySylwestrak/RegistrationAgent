@@ -165,6 +165,31 @@ def notify(topic, title, message, click=None, priority="high", tags="mortar_boar
 # ---------------------------------------------------------------- main
 
 def main():
+    """
+    One check by default. With --loop, keep checking every
+    cfg['check_every_minutes'] for cfg['run_for_minutes'], so one GitHub
+    job covers hours instead of relying on GitHub's laggy scheduler.
+    """
+    if "--loop" not in sys.argv:
+        return check_once()
+    cfg = yaml.safe_load(CONFIG_PATH.read_text())
+    every = float(cfg.get("check_every_minutes", 3)) * 60
+    stop_at = time.time() + float(cfg.get("run_for_minutes", 340)) * 60
+    n = 0
+    while True:
+        n += 1
+        print(f"\n===== check {n} at {datetime.now(timezone.utc):%H:%M:%S} UTC =====", flush=True)
+        try:
+            check_once()
+        except Exception as e:  # never let one bad check kill the loop
+            print(f"Unexpected error: {e}", flush=True)
+        if time.time() + every > stop_at:
+            print("\nLoop window finished; the next scheduled run takes over.")
+            return 0
+        time.sleep(every)
+
+
+def check_once():
     dry = "--dry-run" in sys.argv
     cfg = yaml.safe_load(CONFIG_PATH.read_text())
     topic = "" if dry else os.environ.get("NTFY_TOPIC", "").strip()
